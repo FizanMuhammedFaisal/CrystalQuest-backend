@@ -1,0 +1,15 @@
+{
+    "name": "@backend/utils",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "main": "dist/utils.js",
+    "types": "dist/utils.d.ts",
+    "scripts": {
+        "build": "tsc --build",
+        "type-check": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "typescript": "^5.7.2"
+    }
+}
