@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "es2020",
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*", "esbuild.config.js"],
+  "exclude": ["**/*.spec.ts"]
+}

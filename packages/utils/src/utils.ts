@@ -20,15 +20,29 @@ export function utils(): string {
  * @param client
  * @returns promisified client
  */
-
-export function createGrpcClient<T>(client: Record<string, any>): T {
+export function createGrpcClient<T>(client: any): T {
   const promisified = {} as T
 
   for (const method in client) {
     if (typeof client[method] === 'function') {
-      promisified[method as keyof T] = promisify(
-        client[method].bind(client)
-      ) as any
+      promisified[method as keyof T] = async (
+        request: any,
+        options?: grpc.CallOptions
+      ): Promise<any> => {
+        return new Promise((resolve, reject) => {
+          client[method](
+            request,
+            options || {},
+            (error: grpc.ServiceError | null, response: any) => {
+              if (error) {
+                reject(error)
+                return
+              }
+              resolve(response)
+            }
+          )
+        })
+      }
     }
   }
 

@@ -1,7 +1,7 @@
 syntax = "proto3";
-package auth;
+package game;
 
-service AuthService {
+service GameService {
   rpc SayHello (HelloRequest) returns (HelloResponse) {}
 }
 

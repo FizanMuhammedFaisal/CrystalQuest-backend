@@ -1,17 +1,22 @@
-import express from 'express'
-import { config } from 'dotenv'
+import * as grpc from '@grpc/grpc-js'
+import { GameServiceServer } from '@backend/protos/dist/game/game'
+const PORT = process.env.AUTH_SERVICE_PORT || 50052
+const HOST = process.env.AUTH_SERVICE_HOST || '0.0.0.0'
+const address = `${HOST}:${PORT}`
+function main() {
+  const server = new grpc.Server()
 
-config()
-const host = process.env.HOST ?? 'localhost'
-const port = process.env.PORT ? Number(process.env.PORT) : 3000
-console.log('PORT:', process.env.PORT, 'Host:', process.env.HOST)
+  server.bindAsync(
+    address,
+    grpc.ServerCredentials.createInsecure(),
+    (err, port) => {
+      if (err) {
+        console.error('Failed to bind server:', err)
+        return
+      }
 
-const app = express()
-
-app.get('/', (req, res) => {
-  res.send({ message: 'Hello API' })
-})
-
-app.listen(port, host, () => {
-  console.log(`[ ready ] http://${host}:${port}`)
-})
+      server.start()
+      console.log(`Auth service running on ${address}`)
+    }
+  )
+}

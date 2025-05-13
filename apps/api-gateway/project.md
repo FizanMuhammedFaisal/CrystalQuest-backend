@@ -67,11 +67,11 @@ api-gateway/
 
    ```javascript
    const productsService = {
-     getProduct: id => {
+     getProduct: (id) => {
        return new Promise((resolve, reject) => {
          productsClient.getProduct({ id }, handleGrpcResponse(resolve, reject))
        })
-     }
+     },
      // Other methods...
    }
    ```

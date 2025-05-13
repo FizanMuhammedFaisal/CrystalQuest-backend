@@ -1,7 +1,16 @@
 import express from 'express'
-const router = express.Router()
+import { createProxyMiddleware } from 'http-proxy-middleware'
+import { getPlayersFromAuth } from '../controllers/dashboard.controller.js'
 
-router.get('/hello', (req, res) => {
-  res.send({ message: 'Hello API thisis dahsboard' })
-})
+const router = express.Router()
+router.get('/players-from-auth', getPlayersFromAuth)
+router.use(
+  '/',
+
+  createProxyMiddleware({
+    target: 'http://localhost:3002',
+    changeOrigin: true,
+  })
+)
+
 export const dashboardRouter = router

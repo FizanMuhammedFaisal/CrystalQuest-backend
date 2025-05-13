@@ -1,44 +1,21 @@
+import 'reflect-metadata'
 import * as grpc from '@grpc/grpc-js'
-import * as protoLoader from '@grpc/proto-loader'
-import path from 'path'
-
-// Get the current directory
-const __dirname = path.dirname(new URL(import.meta.url).pathname)
-const rootDir = path.resolve(__dirname, '..', '..', '..') // Adjust as needed
-// Load the proto file
-const PROTO_PATH = path.join(rootDir, 'packages', 'protos', 'auth.proto')
-console.log(PROTO_PATH)
-const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true
-})
-
-const authProto = grpc.loadPackageDefinition(packageDefinition).auth as any
-
-const sayHello = (
-  call: grpc.ServerUnaryCall<any, any>,
-  callback: grpc.sendUnaryData<any>
-) => {
-  const name = call.request.name || 'Anonymous'
-  callback(null, { message: `Hello, ${name}!` })
-}
-
-// Create the server
-function startServer() {
+import { AuthServiceService } from '@backend/protos/dist/auth/auth.js'
+import { getAuthService } from './service/service.js'
+import { InitializeDataBase } from './db/dataSource.js'
+import { User } from './db/models/user.js'
+import { UserRepository } from './db/repository/auth.repository.js'
+const PORT = process.env.AUTH_SERVICE_PORT || 50053
+const HOST = process.env.AUTH_SERVICE_HOST || '0.0.0.0'
+const address = `${HOST}:${PORT}`
+async function main() {
+  const AppDataSource = await InitializeDataBase()
+  const typeOrmUserRepository = AppDataSource.getRepository(User)
+  const UserRepositoryI = new UserRepository(typeOrmUserRepository)
   const server = new grpc.Server()
-
-  // Add the service implementation
-  server.addService(authProto.AuthService.service, {
-    sayHello
-  })
-
-  // Start the server
-  const port = process.env.AUTH_SERVICE_PORT || 50051
+  server.addService(AuthServiceService, getAuthService(UserRepositoryI))
   server.bindAsync(
-    `0.0.0.0:${port}`,
+    address,
     grpc.ServerCredentials.createInsecure(),
     (err, port) => {
       if (err) {
@@ -46,26 +23,8 @@ function startServer() {
         return
       }
 
-      server.start()
-      console.log(`Auth service running on 0.0.0.0:${port}`)
+      console.log(`Auth service running on ${address}`)
     }
   )
-
-  return server
 }
-
-// Start the server
-const server = startServer()
-
-// Handle graceful shutdown
-function shutdown() {
-  console.log('Shutting down auth service...')
-  server.tryShutdown(() => {
-    console.log('Auth service shut down successfully')
-    process.exit(0)
-  })
-}
-
-// Listen for termination signals
-process.on('SIGINT', shutdown)
-process.on('SIGTERM', shutdown)
+main()

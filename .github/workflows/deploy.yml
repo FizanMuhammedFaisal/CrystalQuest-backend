@@ -1,0 +1,113 @@
+name: Build and Deploy Microservices
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api-gateway: ${{ steps.filter.outputs.api-gateway }}
+      auth: ${{ steps.filter.outputs.auth }}
+      dashboard: ${{ steps.filter.outputs.dashboard }}
+      game: ${{ steps.filter.outputs.game }}
+      shared: ${{ steps.filter.outputs.shared }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check for file changes
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            api-gateway: apps/api-gateway/**
+            auth: apps/auth/**
+            dashboard: apps/dashboard/**
+            game: apps/game/**
+            shared: packages/**/*
+
+      - name: Set deployment matrix
+        id: set-matrix
+        run: |
+          # If shared packages changed, deploy all services
+          if [[ "${{ steps.filter.outputs.shared }}" == "true" ]]; then
+            echo "matrix={\"service\":[\"api-gateway\",\"auth\",\"dashboard\",\"game\"]}" >> $GITHUB_OUTPUT
+          else
+            # Otherwise create array of changed services
+            SERVICES="["
+            if [[ "${{ steps.filter.outputs.api-gateway }}" == "true" ]]; then
+              SERVICES+="\"api-gateway\","
+            fi
+            if [[ "${{ steps.filter.outputs.auth }}" == "true" ]]; then
+              SERVICES+="\"auth\","
+            fi
+            if [[ "${{ steps.filter.outputs.dashboard }}" == "true" ]]; then
+              SERVICES+="\"dashboard\","
+            fi
+            if [[ "${{ steps.filter.outputs.game }}" == "true" ]]; then
+              SERVICES+="\"game\","
+            fi
+            # Remove trailing comma if necessary
+            SERVICES=$(echo $SERVICES | sed 's/,$//')
+            SERVICES+="]"
+            if [[ "$SERVICES" == "[]" ]]; then
+              echo "No services changed, set dummy value"
+              echo "matrix={\"service\":[]}" >> $GITHUB_OUTPUT
+            else
+              echo "matrix={\"service\":$SERVICES}" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  build-and-deploy:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.matrix != '{"service":[]}' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with Turborepo
+        run: npx turbo run build --filter=${{ matrix.service }}...
+
+      - name: Run tests
+        run: npx turbo run test --filter=${{ matrix.service }}...
+
+      # Deployment steps for each service based on service name
+      - name: Deploy ${{ matrix.service }}
+        run: |
+          echo "Deploying ${{ matrix.service }} to production"
+          if [ "${{ matrix.service }}" == "api-gateway" ]; then
+            # API Gateway deployment commands
+            # Example: Deploy to AWS API Gateway or similar
+            echo "Deploying API Gateway service"
+            # aws lambda update-function-code --function-name api-gateway-service --zip-file fileb://apps/api-gateway/dist/bundle.zip
+          elif [ "${{ matrix.service }}" == "auth" ]; then
+            # Auth service deployment
+            echo "Deploying Auth service"
+            # Example: Deploy to Auth0 or similar
+          elif [ "${{ matrix.service }}" == "dashboard" ]; then
+            # Dashboard service deployment
+            echo "Deploying Dashboard service"
+            # Example: Deploy to frontend hosting service
+          elif [ "${{ matrix.service }}" == "game" ]; then
+            # Game service deployment
+            echo "Deploying Game service"
+            # Example: Deploy to game server
+          fi

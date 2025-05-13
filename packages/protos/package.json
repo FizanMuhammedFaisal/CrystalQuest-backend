@@ -1,0 +1,22 @@
+{
+  "name": "@backend/protos",
+  "version": "1.0.0",
+  "main": "dist/index.ts",
+  "types": "dist/index.ts",
+  "type": "module",
+  "scripts": {
+    "generate": "protoc --ts_proto_out=./dist --ts_proto_opt=outputServices=grpc-js,esModuleInterop=true,importSuffix=.js, --proto_path=./src ./src/**/*.proto",
+    "clean": "rm -rf ./dist",
+    "prebuild": "mkdir -p ./dist",
+    "build": "npm run clean && npm run prebuild && npm run generate && tsc",
+    "watch": "chokidar 'src/**/*.proto' -c 'npm run generate'"
+  },
+  "devDependencies": {
+    "chokidar": "^3.6.0",
+    "ts-proto": "^2.2.0",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "protobufjs": "^7.3.2"
+  }
+}

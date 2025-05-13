@@ -1,0 +1,61 @@
+syntax = "proto3";
+package auth;
+import "google/protobuf/timestamp.proto";
+service AuthService {
+  rpc SayHello (HelloRequest) returns (HelloResponse) {}
+  rpc Login (LoginRequest) returns (LoginResponse){}
+  rpc Register (RegisterRequest) returns (RegisterResponse) {}
+  rpc getPlayers (GetPlayersRequest) returns (GetPlayersResponse) {}
+}
+
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloResponse {
+  string message = 1;
+}
+
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  bool success = 1;
+  string userId = 2;
+  string role = 3;
+}
+
+message RegisterRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message RegisterResponse {
+  bool success = 1;
+  string userId = 2;
+  string role = 3;
+}
+message GetPlayersRequest{
+  int32 page = 1;
+  int32 limit = 2;
+  string sort = 3;
+  string search = 5;
+  string order = 4;
+}
+message GetPlayersResponse{
+  repeated Player players = 1;
+  int32 total = 2;
+}
+
+message Player{
+  string id = 1;
+  string username = 2;
+  string role = 3;
+  string email = 4;
+   google.protobuf.Timestamp created_at  = 5;
+}

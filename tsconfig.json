@@ -1,12 +1,13 @@
-// /backend/tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "Node",
+
+    "module": "NodeNext", // or Node16
+    "moduleResolution": "NodeNext",
     "baseUrl": ".",
     "paths": {
-      "@backend/utils": ["packages/utils/src/index.ts"]
+      "@backend/utils": ["packages/utils/src/index.ts"],
+      "@backend/protos/*": ["packages/protos/dist/*"]
     },
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
