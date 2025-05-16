@@ -66,9 +66,15 @@ jobs:
             fi
           fi
 
+      # Add a debugging step to check the matrix output
+      - name: Debug Output
+        run: |
+          echo "Matrix output: ${{ steps.set-matrix.outputs.matrix }}"
+
   build-and-deploy:
     needs: detect-changes
-    if: fromJson(needs.detect-changes.outputs.matrix).service.length > 0
+    # Simplified condition that's more reliable
+    if: needs.detect-changes.outputs.api-gateway == 'true' || needs.detect-changes.outputs.auth == 'true' || needs.detect-changes.outputs.dashboard == 'true' || needs.detect-changes.outputs.game == 'true' || needs.detect-changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
