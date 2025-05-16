@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway-deployment
+  labels:
+    app: api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: api-gateway # Labels for the Pods (matches selector)
+    spec:
+      containers:
+        - name: api-gateway
+          image: fizanmuhammedfaisal/api-gateway #linux image
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001 # The port your Node.js app listens on inside the container
+              name: http-api
+          env: # Environment variables to pass to the container
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - configMapRef:
+                name: api-gateway-config
+            - secretRef:
+                name: api-gateway-secrets
+          resources: # Resource requests and limits (important for scheduling and stability)
+            requests:
+              cpu: '100m' # Minimum CPU requested (100 millicores)
+              memory: '128Mi' # Minimum memory requested (128 mebibytes)
+            limits:
+              cpu: '300m' # Maximum CPU allowed
+              memory: '256Mi' # Maximum memory allowed
+
+
+          # Liveness probe: checks if the container is still healthy. If it fails, K8s restarts the container.
+          # Implement a health check endpoint in your API Gateway application.
+          # livenessProbe:
+          #   httpGet:
+          #     path: /healthz # Replace with your actual health check path
+          #     port: 3001     # Should be the container port
+          #   initialDelaySeconds: 15 # Wait 15 seconds before the first check
+          #   periodSeconds: 10      # Check every 10 seconds
+          #   timeoutSeconds: 5      # Timeout after 5 seconds
+          #   successThreshold: 1
+          #   failureThreshold: 3
+
+          # Readiness probe: checks if the container is ready to serve traffic. If it fails, K8s stops sending traffic to the Pod.
+          # Implement a readiness check endpoint in your API Gateway application.
+          # readinessProbe:
+          #   httpGet:
+          #     path: /ready # Replace with your actual readiness check path
+          #     port: 3001   # Should be the container port
+          #   initialDelaySeconds: 5 # Wait 5 seconds before the first check
+          #   periodSeconds: 5      # Check every 5 seconds
+          #   timeoutSeconds: 3      # Timeout after 3 seconds
+          #   successThreshold: 1
+          #   failureThreshold: 3

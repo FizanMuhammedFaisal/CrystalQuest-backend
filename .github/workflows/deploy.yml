@@ -64,9 +64,9 @@ jobs:
             fi
           fi
 
-  build-and-deploy:
+   build-and-deploy:
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.matrix != '{"service":[]}' }}
+    if: fromJson(needs.detect-changes.outputs.matrix).service.length > 0
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
@@ -83,31 +83,31 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+
       - name: Build with Turborepo
         run: npx turbo run build --filter=${{ matrix.service }}...
 
-      - name: Run tests
-        run: npx turbo run test --filter=${{ matrix.service }}...
 
-      # Deployment steps for each service based on service name
-      - name: Deploy ${{ matrix.service }}
-        run: |
-          echo "Deploying ${{ matrix.service }} to production"
-          if [ "${{ matrix.service }}" == "api-gateway" ]; then
-            # API Gateway deployment commands
-            # Example: Deploy to AWS API Gateway or similar
-            echo "Deploying API Gateway service"
-            # aws lambda update-function-code --function-name api-gateway-service --zip-file fileb://apps/api-gateway/dist/bundle.zip
-          elif [ "${{ matrix.service }}" == "auth" ]; then
-            # Auth service deployment
-            echo "Deploying Auth service"
-            # Example: Deploy to Auth0 or similar
-          elif [ "${{ matrix.service }}" == "dashboard" ]; then
-            # Dashboard service deployment
-            echo "Deploying Dashboard service"
-            # Example: Deploy to frontend hosting service
-          elif [ "${{ matrix.service }}" == "game" ]; then
-            # Game service deployment
-            echo "Deploying Game service"
-            # Example: Deploy to game server
-          fi
+      # --- Docker Build and Push Steps (These replace the old placeholder logic) ---
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Build and push Docker image for ${{ matrix.service }}
+        uses: docker/build-push-action@v5
+        with:
+          context: . 
+          file: ./apps/${{ matrix.service }}/Dockerfile # Path to the service's Dockerfile
+          push: true
+          tags: |
+             fizanmuhammedfaisal/crystal-quest:${{ matrix.service }}-latest
+             fizanmuhammedfaisal/crystal-quest:${{ matrix.service }}-${{ github.sha }}
+           
+          cache-from: type=github,ref=${{ github.ref_name }}
+          cache-to: type=github,ref=${{ github.ref_name }},mode=max

@@ -14,6 +14,7 @@ interface PaginationData {
   totalItems: number
   totalPages: number
 }
+console.log(API_GATEWAY_URL, 'API_GATEWAY_URL')
 export async function getPlayers(req: Request, res: Response) {
   const { limit, page, search, sort, order } = req.query
   const parsedLimit = Number(limit)

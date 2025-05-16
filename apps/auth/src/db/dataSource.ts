@@ -11,7 +11,7 @@ const AppDataSource = new DataSource({
   synchronize: false,
   logging: true,
   entities: [User],
-  migrations: ['dist/apps/auth/src/db/migrations/*.js'],
+  migrations: ['dist/db/migrations/*.js'],
 })
 
 const InitializeDataBase = async () => {

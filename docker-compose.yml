@@ -1,0 +1,35 @@
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    image: fizanmuhammedfaisal/crystal-quest:api-gateway-latest
+    environment:
+      NODE_ENV: production
+    ports:
+      - '3001:3001'
+    depends_on:
+      - auth
+      - dashboard
+
+  auth:
+    build:
+      context: .
+      dockerfile: apps/auth/Dockerfile
+    image: fizanmuhammedfaisal/crystal-quest:auth-latest
+    environment:
+      NODE_ENV: production
+    ports:
+      - '50053:50053'
+    depends_on:
+      - dashboard
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: apps/dashboard/Dockerfile
+    image: fizanmuhammedfaisal/crystal-quest:dashboard-latest
+    environment:
+      NODE_ENV: production
+    ports:
+      - '3002:3002'

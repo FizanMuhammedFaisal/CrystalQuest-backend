@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-config
+data:
+  NODE_ENV: 'production'
+  DB_HOST: 'postgres-0.postgres.auth-db.svc.cluster.local'
+  DB_PORT: '5432'
+  DB_USER: 'authuser'
+  DB_NAME: 'authdb'
+  DB_PASSWORD: 'password123'
+  AUTH_SERVICE_HOST: '0.0.0.0'
+  AUTH_SERVICE_PORT: '50053'
+
+  #  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
+  #   host: process.env.DB_HOST ?? 'localhost',
+  #   username: process.env.DB_USER ?? 'postgres',
+  #   database: process.env.DB_NAME ?? 'auth',
+  #   password: process.env.DB_PASSWORD ?? 'postgres',

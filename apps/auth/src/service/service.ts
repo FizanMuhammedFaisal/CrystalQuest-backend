@@ -11,7 +11,7 @@ import {
 } from 'packages/protos/dist/auth/auth.js'
 import { sendUnaryData, ServerUnaryCall, status } from '@grpc/grpc-js'
 import { UserRepository } from '../db/repository/auth.repository'
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcryptjs'
 const SALT_ROUNDS = 10
 export function getAuthService(
   userRepository: UserRepository

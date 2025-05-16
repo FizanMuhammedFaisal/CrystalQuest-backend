@@ -5,8 +5,8 @@ import { getAuthService } from './service/service.js'
 import { InitializeDataBase } from './db/dataSource.js'
 import { User } from './db/models/user.js'
 import { UserRepository } from './db/repository/auth.repository.js'
-const PORT = process.env.AUTH_SERVICE_PORT || 50053
-const HOST = process.env.AUTH_SERVICE_HOST || '0.0.0.0'
+const PORT = process.env.AUTH_SERVICE_PORT ?? 50053
+const HOST = process.env.AUTH_SERVICE_HOST ?? '0.0.0.0'
 const address = `${HOST}:${PORT}`
 async function main() {
   const AppDataSource = await InitializeDataBase()
